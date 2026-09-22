@@ -7,15 +7,15 @@ I built the same infrastructure twice, once in Terraform and once in Bicep, spec
 
 ## What actually turned out different between them
 
-**Resource group creation.** Terraform creates the resource group as just another resource in the same `apply`, no different from anything else it manages. A standard Bicep deployment targets an existing resource group by default, so creating one needs a separate `az group create` command first (or a more complex subscription-scope Bicep file with a nested module). I used the plain `az group create` approach here since that's the common real-world pattern.
+Terraform creates the resource group as just another resource in the same `apply`. Bicep doesn't work that way by default, a standard deployment targets a resource group that already exists, so I had to run `az group create` separately before deploying the Bicep file. There's a more complex subscription-scope version of Bicep that can create the resource group itself, but the plain `az group create` approach is the common real-world pattern, so that's what I used.
 
-**Generating a unique name.** Both storage account names need to be globally unique across Azure. Terraform has no built-in way to do this, so I needed a whole separate provider (`hashicorp/random`) and a `random_string` resource just for that one thing. Bicep has a function for it built in, `uniqueString(resourceGroup().id)`, no extra resource needed.
+Naming the storage account threw up another difference straight away. Both need a globally unique name, and Terraform has no built-in way to generate one, so I pulled in a whole separate provider (`hashicorp/random`) just for that. Bicep has `uniqueString(resourceGroup().id)` built in, no extra provider or resource required.
 
-**Modelling the blob container.** Terraform's `azurerm_storage_container` is a flat resource that just references the storage account by name. Bicep models the same thing as a resource nested two levels deep, storage account, then `blobServices`, then `containers`, using explicit `parent` references. Same end result, different way of expressing the relationship.
+The blob container itself is modelled differently too. Terraform's `azurerm_storage_container` is a flat resource that references the storage account by name. Bicep nests it two levels deep instead, storage account, then `blobServices`, then `containers`, connected with explicit `parent` references. Same end result, just a different way of expressing that one thing depends on another.
 
-**Previewing changes before deploying.** `terraform plan` and `az deployment group create --what-if` do the same job, show what would change before it actually happens, just through different tools with different output formats.
+Previewing changes before deploying works in both, just through different commands, `terraform plan` on one side and `az deployment group create --what-if` on the other.
 
-**State.** This is probably the difference that matters most long term. Terraform keeps its own state file, basically a record of what it thinks it's managing, and checks that file every time you run `plan`. Bicep and ARM don't do this at all. Azure itself is the source of truth, so a Bicep deployment just looks at whatever's actually sitting in Azure right now. No state file to manage or lose. But also no local record of what's supposed to exist, since there's no separate tool keeping one.
+The difference that actually matters longest term is state. Terraform keeps its own file, a record of what it thinks it's managing, and checks it every time you run `plan`. Bicep and ARM skip that entirely, Azure itself is the source of truth, so a deployment just looks at whatever's actually there right now. That means no state file to manage or accidentally lose. It also means there's no local record of what's supposed to exist, since nothing outside Azure is keeping one.
 
 ## Which one I'd actually pick
 
