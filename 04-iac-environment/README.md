@@ -21,6 +21,12 @@ I built the same infrastructure twice, once in Terraform and once in Bicep, spec
 
 For a pure Azure shop with no multi-cloud need, Bicep's tighter integration (no state file to manage, first-party Microsoft support, faster iteration with `what-if`) is genuinely appealing. Terraform's advantage shows up the moment you need to manage anything outside Azure, or want the same tool and workflow across cloud providers. Since most of what I've built so far is Azure-only, I've defaulted to Terraform for the bigger projects mainly for consistency across this portfolio, not because it's objectively better here.
 
+## Screenshot
+
+Both resource groups sitting side by side, proof the same result got built two different ways:
+
+![Both resource groups](docs/both-resource-groups.png)
+
 ## Cost notes
 
 **Actual spend: £0.00 or close to it.** Two Standard LRS storage accounts holding nothing but an empty container each. Same reasoning as Project 1, storage at this scale costs fractions of a penny, and there's no compute or networking cost in either version.
