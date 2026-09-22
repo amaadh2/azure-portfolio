@@ -1,0 +1,28 @@
+// ---------------------------------------------------------------------------
+// queries.kql
+// Project 5: Monitoring and Alerting Dashboard
+// KQL (Kusto Query Language) queries against the AzureActivity table,
+// populated by the subscription Activity Log diagnostic setting.
+// ---------------------------------------------------------------------------
+
+// Query 1: Most recent subscription activity, newest first.
+// project picks just the columns that matter - AzureActivity has dozens of
+// columns by default, most irrelevant for a quick look at "what happened."
+AzureActivity
+| project TimeGenerated, OperationNameValue, ResourceGroup, Caller, ActivityStatusValue
+| order by TimeGenerated desc
+| take 50
+
+// Query 2: Which resource group generated the most activity.
+// A genuinely useful pattern - summarize + count groups rows and counts
+// them, rather than you manually scrolling through hundreds of log lines.
+AzureActivity
+| summarize OperationCount = count() by ResourceGroup
+| order by OperationCount desc
+
+// Query 3: Failed operations only - the query that actually matters for
+// monitoring, rather than just "what happened."
+AzureActivity
+| where ActivityStatusValue == "Failed"
+| project TimeGenerated, OperationNameValue, ResourceGroup, Caller, ActivityStatusValue
+| order by TimeGenerated desc
