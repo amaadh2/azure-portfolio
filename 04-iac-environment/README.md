@@ -15,7 +15,7 @@ I built the same infrastructure twice, once in Terraform and once in Bicep, spec
 
 **Previewing changes before deploying.** `terraform plan` and `az deployment group create --what-if` do the same job, show what would change before it actually happens, just through different tools with different output formats.
 
-**State.** This is the one that actually matters most long-term. Terraform keeps its own state file that tracks exactly what it's managing and compares against it on every plan. Bicep/ARM deployments don't work that way, Azure itself is the source of truth, and each deployment just reconciles against whatever's actually there right now. No separate state file to manage, back up, or worry about getting out of sync, but also no local record of "what Terraform thinks exists" the way Terraform keeps one.
+**State.** This is probably the difference that matters most long term. Terraform keeps its own state file, basically a record of what it thinks it's managing, and checks that file every time you run `plan`. Bicep and ARM don't do this at all. Azure itself is the source of truth, so a Bicep deployment just looks at whatever's actually sitting in Azure right now. No state file to manage or lose. But also no local record of what's supposed to exist, since there's no separate tool keeping one.
 
 ## Which one I'd actually pick
 
